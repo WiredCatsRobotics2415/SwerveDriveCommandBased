@@ -1,0 +1,66 @@
+[
+  {
+    "name": "/Preferences/FL_OFFSET (DO NOT TOUCH)",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/FR_OFFSET (DO NOT TOUCH)",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/BL_OFFSET (DO NOT TOUCH)",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/BR_OFFSET (DO NOT TOUCH)",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Input Filter Type (True for curve, False for slew): ",
+    "type": "boolean",
+    "value": true,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Curve Power (Only if IF is True): ",
+    "type": "double",
+    "value": 3.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Field Oriented Drive: ",
+    "type": "boolean",
+    "value": false,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Slew limit (Only if IF is False): ",
+    "type": "double",
+    "value": 0.5,
+    "properties": {
+      "persistent": true
+    }
+  }
+]
