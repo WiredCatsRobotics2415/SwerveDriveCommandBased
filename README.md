@@ -2,7 +2,7 @@ Swerve Drive command based
 
 using standard 2415 hw:
  - Falcon 500 with talonFXs built in for each motor
- - MA3 analog encoders as external encoders
+ - US MA3 absolute ANALOG (not pwm) encoders as external encoders (basically just potentiometers)
 
 Uses extneral encoders for PID control
 
