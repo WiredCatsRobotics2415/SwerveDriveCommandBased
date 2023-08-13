@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Swerve.SwerveModuleName;
+import frc.utils.RobotPreferences;
 
 public class SwerveDrive extends SubsystemBase {
     //HARDWARE
@@ -28,7 +29,6 @@ public class SwerveDrive extends SubsystemBase {
 
     //STATES
     private SwerveDriveOdometry odometry;
-    private Rotation2d startupHeading;
 
     public SwerveDrive() {
         modules = new SwerveModule[] {
@@ -39,7 +39,6 @@ public class SwerveDrive extends SubsystemBase {
         };
 
         navX = new AHRS(Port.kMXP);
-        startupHeading = navX.getRotation2d();
         navX.reset();
 
         odometry = new SwerveDriveOdometry(
@@ -86,7 +85,7 @@ public class SwerveDrive extends SubsystemBase {
 
     @Override
     public void periodic() {
-        odometry.update(navX.getRotation2d(), new SwerveModulePosition[] {
+        odometry.update(Rotation2d.fromDegrees(navX.getAngle()+RobotPreferences.getNavXOffset()), new SwerveModulePosition[] {
             modules[0].getPosition(),
             modules[1].getPosition(),
             modules[2].getPosition(),

@@ -129,4 +129,26 @@ public class RobotPreferences {
         ensureExistance(key, PrefTypes.BOOL, false);
         return Preferences.getBoolean(key, true);
     }
+
+    /**
+     * What angle should the navX be offset by?
+     * ie. set to 180 if the robot starts backwards
+     * @return int of offset in degrees, default 0
+     */
+    public static int getNavXOffset() {
+        String key = "navX angle offset";
+        ensureExistance(key, PrefTypes.INT, 0);
+        return Preferences.getInt(key, 0);
+    }
+
+     /**
+      * What angle should the navX be offset by?
+      * ie. set to 180 if the robot starts backwards
+      * @param offset offset in degrees
+     */
+    public static void setNavXOffset(int offset) {
+        String key = "navX angle offset";
+        ensureExistance(key, PrefTypes.INT, offset);
+        Preferences.setInt(key, offset);
+    }
 }

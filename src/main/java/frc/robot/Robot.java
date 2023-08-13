@@ -8,6 +8,7 @@ import java.util.Map;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotController;
@@ -33,9 +34,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     oiChooser = new SendableChooser<Integer>();
     oiChooser.setDefaultOption("Gulikit Controller", 0);
-    for (String k : Preferences.getKeys()) {
-      System.out.println(k);
-    }
+    for (String k : Preferences.getKeys()) System.out.println(k);
   }
 
   private void configButtonBindings() {
@@ -46,6 +45,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    // if (DriverStation.isFMSAttached()) {
+    //  //If in a comp setting, this method runs right after auto is over and teleop is enabled
+    //  //The perfect time to offset the navX so the driver doesn't waste time doing anything
+    //   RobotPreferences.setNavXOffset(180);
+    // }
     switch (oiChooser.getSelected()) {
       case 0:
         selectedOI = new OIs.GulikitController();
@@ -70,7 +74,7 @@ public class Robot extends TimedRobot {
       if (!isPressingUserButton) {
         isPressingUserButton = true;
         System.out.println("Zeroing...");
-        //Zero time
+        //Zero
         for (SwerveModule m : swerveDrive.getModules()) {
           RobotPreferences.setOffsetOfModule(m.name, m.getState().angle.getDegrees());
           m.setModuleOffsetFromStorage();
@@ -82,3 +86,6 @@ public class Robot extends TimedRobot {
     }
   }
 }
+
+//Needs testing
+//"Theory will only take you so far" - Oppenheimer
