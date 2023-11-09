@@ -4,16 +4,9 @@
 
 package frc.robot;
 
-import java.util.Map;
-
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -29,6 +22,20 @@ public class Robot extends TimedRobot {
   private SendableChooser<Integer> oiChooser;
   private OIs.OI selectedOI;
   private boolean isPressingUserButton = false;
+
+  //#region COMMANDS
+  InstantCommand zeroCommand = new InstantCommand(new Runnable() {
+    @Override
+    public void run() {
+      System.out.println("Zeroing...");
+      for (SwerveModule m : swerveDrive.getModules()) {
+        RobotPreferences.setOffsetOfModule(m.name, m.getState().angle.getDegrees());
+        m.setModuleOffsetFromStorage();
+      }
+      System.out.println("Done zeroing...");
+    }
+  }, swerveDrive);
+  //#endregion
 
   @Override
   public void robotInit() {
@@ -69,21 +76,16 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     SmartDashboard.putData("OI", oiChooser);
-    CommandScheduler.getInstance().run();
+    SmartDashboard.putData("Zero", zeroCommand);
     if (RobotController.getUserButton()) {
       if (!isPressingUserButton) {
         isPressingUserButton = true;
-        System.out.println("Zeroing...");
-        //Zero
-        for (SwerveModule m : swerveDrive.getModules()) {
-          RobotPreferences.setOffsetOfModule(m.name, m.getState().angle.getDegrees());
-          m.setModuleOffsetFromStorage();
-        }
-        System.out.println("Done Zeroing");
+        CommandScheduler.getInstance().schedule(zeroCommand);
       }
     } else {
       if (isPressingUserButton) isPressingUserButton = false;
     }
+    CommandScheduler.getInstance().run();
   }
 }
 

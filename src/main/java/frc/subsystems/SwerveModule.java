@@ -36,6 +36,7 @@ public class SwerveModule implements Sendable {
 
     //STATES
     private SwerveModuleState lastState = new SwerveModuleState();
+    private int encoderSyncTick = 0;
 
     //CONTROLLERS
     private SimpleMotorFeedforward azimuthMotorFF;
@@ -65,7 +66,6 @@ public class SwerveModule implements Sendable {
                 2*Math.PI //Note: Copied from WPI example
             )
         );
-        Constants.Swerve.AZIMUTH_PIDS[name.ordinal()].configProfiledPIDController(azimuthPID);
         azimuthPID.enableContinuousInput(-Math.PI, Math.PI);
 
         driveMotorFF = Constants.Swerve.DRIVE_FF;
@@ -96,15 +96,13 @@ public class SwerveModule implements Sendable {
     private void configAzimuthMotor(PIDValue pid) {
         azimuthMotor.configFactoryDefault(Constants.CAN_TIMEOUT_MS);
         //NOTE: uncomment the following only if using interal encoders for PID loop
-        /*
         azimuthMotor.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.CAN_TIMEOUT_MS);
         // Use the internal TalonFX encoder for PID
         azimuthMotor.configIntegratedSensorInitializationStrategy(SensorInitializationStrategy.BootToZero,
                 Constants.CAN_TIMEOUT_MS);
         // The internal encoder should startup at zero
-        azimuthMotor.setSelectedSensorPosition(Constants.degreesToFalcon(this.azimuthEncoder.getRotationDegrees()), 0,
+        azimuthMotor.setSelectedSensorPosition(Constants.Swerve.degreesToFalcon(this.absoluteEncoder.getRotationDegrees()), 0,
                 Constants.CAN_TIMEOUT_MS);
-        */
         // Set the internal encoder equal to the converted value from the external
         // encoder (make sure it's accurate)
         azimuthMotor.setNeutralMode(NeutralMode.Coast);
@@ -114,11 +112,9 @@ public class SwerveModule implements Sendable {
         azimuthMotor.configSupplyCurrentLimit(Constants.Swerve.AZIMUTH_CURRENT_LIMIT);
         // PID Values (for position, use P and D terms to ensure accuracy)
         //NOTE: only uncomment below if using internal encoder for PID
-        /*
         azimuthMotor.config_kP(0, pid.getKP(), Constants.CAN_TIMEOUT_MS);
         azimuthMotor.config_kI(0, pid.getKI(), Constants.CAN_TIMEOUT_MS);
         azimuthMotor.config_kD(0, pid.getKD(), Constants.CAN_TIMEOUT_MS);
-        */
     }
 
     /**
@@ -152,27 +148,17 @@ public class SwerveModule implements Sendable {
    */
   public void setNewState(SwerveModuleState desiredState) {
     // Optimize the reference state to avoid spinning further than 90 degrees
-    // SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromDegrees(absoluteEncoder.getRotationDegrees()));
-    SwerveModuleState state = desiredState;
-    
-    //table of contents:
-    // azimuth motor control with WPI PID loop
-    // azimuth motor control with the talonfx loop
-    // drive motor control with WPI PID loop
-    // drive motor control with percent output
+    SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromDegrees(absoluteEncoder.getRotationDegrees()));
+    //SwerveModuleState state = desiredState;
     
     //#region Azimuth WPI PID
     final double turnOutput = azimuthPID.calculate(Math.toRadians(absoluteEncoder.getRotationDegrees()), state.angle.getRadians());
     final double turnFeedforward = azimuthMotorFF.calculate(azimuthPID.getSetpoint().velocity);
     azimuthMotor.setVoltage(turnOutput + turnFeedforward);
-    if (name == SwerveModuleName.BACK_RIGHT) {
-        System.out.println(absoluteEncoder.getRotationDegrees() + ", " + state.angle.getDegrees());
-        System.out.println("Voltage: " + azimuthMotor.getMotorOutputVoltage());
-    }
     //#endregion
     
     //#region Azimuth TalonFX loop
-    //azimuthMotor.set(ControlMode.Position, Constants.Swerve.degreesToFalcon(state.angle.getDegrees()));
+    azimuthMotor.set(ControlMode.Position, Constants.Swerve.degreesToFalcon(state.angle.getDegrees()));
     //#endregion
 
     //#region Drive WPI PID
@@ -183,7 +169,7 @@ public class SwerveModule implements Sendable {
     //#endregion
 
     //#region Drive % Out    
-    //driveMotor.set(ControlMode.PercentOutput, state.speedMetersPerSecond / Constants.Swerve.MAX_DRIVE_SPEED);
+    driveMotor.set(ControlMode.PercentOutput, state.speedMetersPerSecond / Constants.Swerve.MAX_DRIVE_SPEED);
     //#endregion
     
     if (Robot.isSimulation()) {

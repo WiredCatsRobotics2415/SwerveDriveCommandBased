@@ -50,10 +50,10 @@ public class Constants {
         };
 
         public static final PIDValue[] AZIMUTH_PIDS = {
-            new PIDValue(3.2781, 0.0, 0.019361), //Front Left
-            new PIDValue(3.3054, 0.0, 0.020187), //Front Right
-            new PIDValue(3.57, 0.0, 0.025832), //Back Left
-            new PIDValue(3.3726, 0.0, 0.021813), //Back Right
+            new PIDValue(3.6148, 0.0, 0.018873), //Front Left
+            new PIDValue(3.6148, 0.0, 0.018873), //Front Right
+            new PIDValue(3.6148, 0.0, 0.018873), //Back Left
+            new PIDValue(3.6148, 0.0, 0.018873), //Back Right
         };
 
         public static final double MAX_ANGULAR_SPEED = 3.0; //m/s
