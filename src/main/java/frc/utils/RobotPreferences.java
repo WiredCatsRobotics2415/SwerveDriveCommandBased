@@ -141,14 +141,36 @@ public class RobotPreferences {
         return Preferences.getInt(key, 0);
     }
 
+    /**
+      * What angle should the navX be offset by?
+      * ie. set to 180 if the robot starts backwards
+      * @param offset offset in degrees
+    */
+    public static void setNavXOffset(int offset) {
+        String key = "navX angle offset";
+        ensureExistance(key, PrefTypes.INT, offset);
+        Preferences.setInt(key, offset);
+    }
+
+    /**
+      * What angle should the navX be offset by?
+      * ie. set to 180 if the robot starts backwards
+      * @param offset offset in degrees
+     */
+    public static boolean getAutoAzimuthSync() {
+        String key = "Auto azimuth sync";
+        ensureExistance(key, PrefTypes.BOOL, true);
+        return Preferences.getBoolean(key, true);
+    }
+
      /**
       * What angle should the navX be offset by?
       * ie. set to 180 if the robot starts backwards
       * @param offset offset in degrees
      */
-    public static void setNavXOffset(int offset) {
-        String key = "navX angle offset";
-        ensureExistance(key, PrefTypes.INT, offset);
-        Preferences.setInt(key, offset);
+    public static void setAutoAzimuthSync(boolean enable) {
+        String key = "Auto azimuth sync";
+        ensureExistance(key, PrefTypes.BOOL, enable);
+        Preferences.setBoolean(key, enable);
     }
 }

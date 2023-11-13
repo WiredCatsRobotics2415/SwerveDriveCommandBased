@@ -14,9 +14,17 @@ public class Constants {
     **/
     public static final int CAN_TIMEOUT_MS = 30;
 
+    //Package in its own namespace so this code can easily be copied and pasted into other robot code
     public static class Swerve {
         public enum SwerveModuleName {
             FRONT_LEFT, FRONT_RIGHT, BACK_LEFT, BACK_RIGHT;
+        }
+
+        public static final int ENCODER_RESET_TICKS = 30;
+        public static final int ENCODER_RESET_DEGREE_THRESHOLD = 1;
+        public static double ENCODER_RESET_CPR_THRESHOLD = 0;
+        static {
+            ENCODER_RESET_CPR_THRESHOLD = degreesToFalcon(ENCODER_RESET_DEGREE_THRESHOLD)*.1;
         }
 
         public static final double AZIMUTH_GEAR_RATIO = (26.0 / 9.0) * (96.0 / 18.0); 
@@ -50,10 +58,10 @@ public class Constants {
         };
 
         public static final PIDValue[] AZIMUTH_PIDS = {
-            new PIDValue(3.6148, 0.0, 0.018873), //Front Left
-            new PIDValue(3.6148, 0.0, 0.018873), //Front Right
-            new PIDValue(3.6148, 0.0, 0.018873), //Back Left
-            new PIDValue(3.6148, 0.0, 0.018873), //Back Right
+            new PIDValue(0.2, 0.0, .01), //Front Left
+            new PIDValue(0.14, 0.0, .007), //Front Right
+            new PIDValue(0.2, 0.0, .01), //Back Left
+            new PIDValue(0.14, 0.0, .007), //Back Right
         };
 
         public static final double MAX_ANGULAR_SPEED = 3.0; //m/s

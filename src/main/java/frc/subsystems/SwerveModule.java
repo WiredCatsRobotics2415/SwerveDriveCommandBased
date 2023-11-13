@@ -15,7 +15,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.Encoder;
 import frc.robot.RobotMap.Swerve;
 import frc.robot.Constants;
 import frc.robot.Robot;
@@ -33,17 +32,11 @@ public class SwerveModule implements Sendable {
     
     //PROPERTIES
     public SwerveModuleName name;
+    private boolean autoAzimuthSync;
 
     //STATES
     private SwerveModuleState lastState = new SwerveModuleState();
     private int encoderSyncTick = 0;
-
-    //CONTROLLERS
-    private SimpleMotorFeedforward azimuthMotorFF;
-    private ProfiledPIDController azimuthPID;
-    
-    private SimpleMotorFeedforward driveMotorFF;
-    private PIDController driveMotorPID; 
 
     public SwerveModule(SwerveModuleName name) {
         this.name = name;
@@ -57,23 +50,7 @@ public class SwerveModule implements Sendable {
         configDriveMotor();
         configAzimuthMotor(Constants.Swerve.AZIMUTH_PIDS[name.ordinal()]);
 
-        azimuthMotorFF = Constants.Swerve.AZIMUTH_FFS[name.ordinal()];
-        azimuthPID = new ProfiledPIDController(Constants.Swerve.AZIMUTH_PIDS[name.ordinal()].getKP(),
-        0,
-        Constants.Swerve.AZIMUTH_PIDS[name.ordinal()].getKD(),
-            new TrapezoidProfile.Constraints(
-                Constants.Swerve.MAX_ANGULAR_SPEED,
-                2*Math.PI //Note: Copied from WPI example
-            )
-        );
-        azimuthPID.enableContinuousInput(-Math.PI, Math.PI);
-
-        driveMotorFF = Constants.Swerve.DRIVE_FF;
-        driveMotorPID = new PIDController(
-            Constants.Swerve.DRIVE_PID.getKP(),
-            Constants.Swerve.DRIVE_PID.getKI(), 
-            Constants.Swerve.DRIVE_PID.getKD()
-        );
+        autoAzimuthSync = RobotPreferences.getAutoAzimuthSync();
     }
 
     private void configDriveMotor() {
@@ -142,47 +119,66 @@ public class SwerveModule implements Sendable {
     }
 
     /**
+     * Falcon encoders report values over 360, so this function takes an angle [0-360]
+     * and the current value of the motor, and returns a value that is whatever angle was given
+     * but in the 0-360 range of wherever the motor is.
+     * For example: an 88 degree angle on a motor that is at 721 degrees would be 809
+     */
+    private double over360RangeSetter(double desiredSetAngle, double currentAngle) {
+        if (Math.floor(currentAngle / 360.0) != 0) {
+            // if the current angle is past the 0-360 range, desired set angle must be
+            // adjusted to the current range of the motor angle
+            // always positive modulus function = (a % b + b) % b - positive modulus
+            // function faster than conditionals
+            // taking the angle in [0, 360) then adding the number of full rotations * 360
+            desiredSetAngle = ((desiredSetAngle % 360 + 360) % 360)
+                    + Math.floor(currentAngle / 360.0) * 360.0;
+        }
+        return desiredSetAngle;
+    }
+
+    /**
    * Sets the new state for the module.
    *
    * @param desiredState Desired state with speed and angle.
    */
   public void setNewState(SwerveModuleState desiredState) {
+    //Auto encoder sync
+    //Borrowed from https://github.com/SwerveDriveSpecialties/Do-not-use-swerve-lib-2022-unmaintained/blob/develop/src/main/java/com/swervedrivespecialties/swervelib/ctre/Falcon500SteerControllerFactoryBuilder.java
+    if (autoAzimuthSync && azimuthMotor.getSelectedSensorVelocity() < Constants.Swerve.ENCODER_RESET_CPR_THRESHOLD) {
+        if (++encoderSyncTick >= Constants.Swerve.ENCODER_RESET_TICKS) {
+            encoderSyncTick = 0;
+            double currentAngle = Constants.Swerve.falconToDegrees(azimuthMotor.getSelectedSensorPosition());
+            azimuthMotor.setSelectedSensorPosition(Constants.Swerve.degreesToFalcon(
+                over360RangeSetter(absoluteEncoder.getRotationDegrees(), currentAngle)
+            ), 0, Constants.CAN_TIMEOUT_MS);
+        }
+    } else {
+        encoderSyncTick = 0;
+    }
     // Optimize the reference state to avoid spinning further than 90 degrees
     SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromDegrees(absoluteEncoder.getRotationDegrees()));
     //SwerveModuleState state = desiredState;
     
-    //#region Azimuth WPI PID
-    final double turnOutput = azimuthPID.calculate(Math.toRadians(absoluteEncoder.getRotationDegrees()), state.angle.getRadians());
-    final double turnFeedforward = azimuthMotorFF.calculate(azimuthPID.getSetpoint().velocity);
-    azimuthMotor.setVoltage(turnOutput + turnFeedforward);
-    //#endregion
-    
-    //#region Azimuth TalonFX loop
     azimuthMotor.set(ControlMode.Position, Constants.Swerve.degreesToFalcon(state.angle.getDegrees()));
-    //#endregion
 
-    //#region Drive WPI PID
-    final double driveOutput = driveMotorPID.calculate(Constants.Swerve.falconToMPS(driveMotor.getSelectedSensorVelocity()), state.speedMetersPerSecond);
-    final double driveFeedForward = driveMotorFF.calculate(state.speedMetersPerSecond);
-
-    driveMotor.setVoltage(driveOutput + driveFeedForward);
-    //#endregion
-
-    //#region Drive % Out    
     driveMotor.set(ControlMode.PercentOutput, state.speedMetersPerSecond / Constants.Swerve.MAX_DRIVE_SPEED);
-    //#endregion
     
+    //Simulation - fill in all of the simulated values with the ideal 
     if (Robot.isSimulation()) {
         azimuthMotor.getSimCollection().setIntegratedSensorRawPosition((int)Constants.Swerve.degreesToFalcon(state.angle.getDegrees()));
         driveMotor.getSimCollection().addIntegratedSensorPosition((int)(driveMotor.getSelectedSensorPosition()*Constants.Swerve.DRIVE_DISTANCE_PER_ROTATION));
         driveMotor.getSimCollection().setIntegratedSensorVelocity((int)Constants.Swerve.MPSToFalcon(state.speedMetersPerSecond));
     }
-
     lastState = state;
   }
 
   public SwerveModuleState getLastSetState() {
       return lastState;
+  }
+
+  public void prepareEncoderForZeroing() {
+    this.absoluteEncoder.setOffset(0);
   }
 
   public void setModuleOffsetFromStorage() {
@@ -195,6 +191,8 @@ public class SwerveModule implements Sendable {
     builder.addDoubleProperty("setAngle", () -> this.getLastSetState().angle.getDegrees(), null);
     builder.addDoubleProperty("actualSpeed", () -> this.getState().speedMetersPerSecond, null);
     builder.addDoubleProperty("actualAngle", () -> this.getState().angle.getDegrees(), null);
-    //builder.addDoubleProperty("externalAngle", () -> Constants.Swerve.falconToDegrees(azimuthMotor.getSelectedSensorPosition()), null);
+    builder.addDoubleProperty("externalAngle", () -> {
+       return Constants.Swerve.falconToDegrees(azimuthMotor.getSelectedSensorPosition())%360;
+    }, null);
   }
 }

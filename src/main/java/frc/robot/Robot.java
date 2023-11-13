@@ -29,6 +29,7 @@ public class Robot extends TimedRobot {
     public void run() {
       System.out.println("Zeroing...");
       for (SwerveModule m : swerveDrive.getModules()) {
+        m.prepareEncoderForZeroing();
         RobotPreferences.setOffsetOfModule(m.name, m.getState().angle.getDegrees());
         m.setModuleOffsetFromStorage();
       }
@@ -39,6 +40,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    zeroCommand.ignoringDisable(true);
     oiChooser = new SendableChooser<Integer>();
     oiChooser.setDefaultOption("Gulikit Controller", 0);
     for (String k : Preferences.getKeys()) System.out.println(k);
@@ -75,17 +77,18 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
     SmartDashboard.putData("OI", oiChooser);
     SmartDashboard.putData("Zero", zeroCommand);
     if (RobotController.getUserButton()) {
       if (!isPressingUserButton) {
+        System.out.println("user button");
         isPressingUserButton = true;
         CommandScheduler.getInstance().schedule(zeroCommand);
       }
     } else {
       if (isPressingUserButton) isPressingUserButton = false;
     }
-    CommandScheduler.getInstance().run();
   }
 }
 
