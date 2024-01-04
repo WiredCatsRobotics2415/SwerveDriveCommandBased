@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.subsystems.SwerveDrive;
-import frc.subsystems.SwerveModule;
 import frc.utils.RobotPreferences;
 
 public class Robot extends TimedRobot {
@@ -23,27 +22,12 @@ public class Robot extends TimedRobot {
   private OIs.OI selectedOI;
   private boolean isPressingUserButton = false;
 
-  //#region COMMANDS
-  InstantCommand zeroCommand = new InstantCommand(new Runnable() {
-    @Override
-    public void run() {
-      System.out.println("Zeroing...");
-      for (SwerveModule m : swerveDrive.getModules()) {
-        m.prepareEncoderForZeroing();
-        RobotPreferences.setOffsetOfModule(m.name, m.getState().angle.getDegrees());
-        m.setModuleOffsetFromStorage();
-      }
-      System.out.println("Done zeroing...");
-    }
-  }, swerveDrive);
-  //#endregion
-
   @Override
   public void robotInit() {
-    zeroCommand.ignoringDisable(true);
     oiChooser = new SendableChooser<Integer>();
     oiChooser.setDefaultOption("Gulikit Controller", 0);
     for (String k : Preferences.getKeys()) System.out.println(k);
+    SmartDashboard.putData("Zero", new InstantCommand(() -> swerveDrive.zeroAllModules()).ignoringDisable(true));
   }
 
   private void configButtonBindings() {
@@ -79,12 +63,11 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     SmartDashboard.putData("OI", oiChooser);
-    SmartDashboard.putData("Zero", zeroCommand);
     if (RobotController.getUserButton()) {
       if (!isPressingUserButton) {
         System.out.println("user button");
         isPressingUserButton = true;
-        CommandScheduler.getInstance().schedule(zeroCommand);
+        CommandScheduler.getInstance().schedule(new InstantCommand(() -> swerveDrive.zeroAllModules()).ignoringDisable(true));
       }
     } else {
       if (isPressingUserButton) isPressingUserButton = false;

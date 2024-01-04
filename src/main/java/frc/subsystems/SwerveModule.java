@@ -6,13 +6,9 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import frc.robot.RobotMap.Swerve;
@@ -152,6 +148,7 @@ public class SwerveModule implements Sendable {
             azimuthMotor.setSelectedSensorPosition(Constants.Swerve.degreesToFalcon(
                 over360RangeSetter(absoluteEncoder.getRotationDegrees(), currentAngle)
             ), 0, Constants.CAN_TIMEOUT_MS);
+            System.out.println("[MODULE " + name.toString() + "] Azimuth synced, diff: " + Math.abs((currentAngle%360)-absoluteEncoder.getRotationDegrees()));
         }
     } else {
         encoderSyncTick = 0;
@@ -161,13 +158,12 @@ public class SwerveModule implements Sendable {
     //SwerveModuleState state = desiredState;
     
     azimuthMotor.set(ControlMode.Position, Constants.Swerve.degreesToFalcon(state.angle.getDegrees()));
-
     driveMotor.set(ControlMode.PercentOutput, state.speedMetersPerSecond / Constants.Swerve.MAX_DRIVE_SPEED);
     
     //Simulation - fill in all of the simulated values with the ideal 
     if (Robot.isSimulation()) {
         azimuthMotor.getSimCollection().setIntegratedSensorRawPosition((int)Constants.Swerve.degreesToFalcon(state.angle.getDegrees()));
-        driveMotor.getSimCollection().addIntegratedSensorPosition((int)(driveMotor.getSelectedSensorPosition()*Constants.Swerve.DRIVE_DISTANCE_PER_ROTATION));
+        driveMotor.getSimCollection().addIntegratedSensorPosition((int)((state.speedMetersPerSecond/50)*(Constants.Swerve.DRIVE_GEAR_RATIO/Constants.Swerve.WHEEL_CIRCUMFERENCE)*2048));
         driveMotor.getSimCollection().setIntegratedSensorVelocity((int)Constants.Swerve.MPSToFalcon(state.speedMetersPerSecond));
     }
     lastState = state;
@@ -177,12 +173,8 @@ public class SwerveModule implements Sendable {
       return lastState;
   }
 
-  public void prepareEncoderForZeroing() {
-    this.absoluteEncoder.setOffset(0);
-  }
-
-  public void setModuleOffsetFromStorage() {
-    this.absoluteEncoder.setOffset(RobotPreferences.getOffsetOfModule(name));
+  public void setModuleOffset(double offset) {
+    this.absoluteEncoder.setOffset(offset);
   }
 
   @Override public void initSendable(SendableBuilder builder) {
@@ -192,7 +184,7 @@ public class SwerveModule implements Sendable {
     builder.addDoubleProperty("actualSpeed", () -> this.getState().speedMetersPerSecond, null);
     builder.addDoubleProperty("actualAngle", () -> this.getState().angle.getDegrees(), null);
     builder.addDoubleProperty("externalAngle", () -> {
-       return Constants.Swerve.falconToDegrees(azimuthMotor.getSelectedSensorPosition())%360;
+       return Constants.Swerve.falconToDegrees(azimuthMotor.getSelectedSensorPosition()-1)%360;
     }, null);
   }
 }

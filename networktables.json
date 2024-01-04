@@ -70,5 +70,13 @@
     "properties": {
       "persistent": true
     }
+  },
+  {
+    "name": "/Preferences/Auto azimuth sync",
+    "type": "boolean",
+    "value": true,
+    "properties": {
+      "persistent": true
+    }
   }
 ]

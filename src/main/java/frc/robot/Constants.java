@@ -30,7 +30,7 @@ public class Constants {
         public static final double AZIMUTH_GEAR_RATIO = (26.0 / 9.0) * (96.0 / 18.0); 
         public static final double DRIVE_GEAR_RATIO = (26.0 / 9.0) * (45 / 15.0); 
         public static final double WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(5);
-        public static final double DRIVE_DISTANCE_PER_ROTATION = WHEEL_CIRCUMFERENCE / (2048 * DRIVE_GEAR_RATIO); 
+        public static final double DRIVE_DISTANCE_PER_ROTATION = WHEEL_CIRCUMFERENCE/DRIVE_GEAR_RATIO; 
 
         public static final double LEFTRIGHT_DISTANCE = Units.inchesToMeters(29.9);
         public static final double FRONTBACK_DISTANCE = Units.inchesToMeters(29.9);
@@ -50,16 +50,9 @@ public class Constants {
         public static final SupplyCurrentLimitConfiguration DRIVE_CURRENT_LIMIT = new SupplyCurrentLimitConfiguration(false, 30, 60, 0.1);
         public static final SupplyCurrentLimitConfiguration AZIMUTH_CURRENT_LIMIT = new SupplyCurrentLimitConfiguration(true, 25, 40, 0.1);
 
-        public static final SimpleMotorFeedforward[] AZIMUTH_FFS = {
-            new SimpleMotorFeedforward(0.22711, 0.0094593, 0.00024977), //Front Left
-            new SimpleMotorFeedforward(0.19855, 0.0093456, 0.00025985), //Front Right
-            new SimpleMotorFeedforward(0.27607,0.009526, 0.00033531), //Back Left
-            new SimpleMotorFeedforward(0.30216, 0.0095589, 0.00028206)   //Back Right
-        };
-
         public static final PIDValue[] AZIMUTH_PIDS = {
             new PIDValue(0.2, 0.0, .01), //Front Left
-            new PIDValue(0.14, 0.0, .007), //Front Right
+            new PIDValue(0.14, 0.0, 0.07), //Front Right
             new PIDValue(0.2, 0.0, .01), //Back Left
             new PIDValue(0.14, 0.0, .007), //Back Right
         };
@@ -80,7 +73,7 @@ public class Constants {
         }
         
         public static double driveFalconToDistance(double ticks) {
-            return ticks * DRIVE_DISTANCE_PER_ROTATION;
+            return (ticks/2048) * DRIVE_DISTANCE_PER_ROTATION;
         }
 
         public static double falconToRPM(double velocityCounts) {

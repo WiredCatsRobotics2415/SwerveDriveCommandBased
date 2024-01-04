@@ -1,6 +1,5 @@
 package frc.utils;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 
 public class PIDValue implements Cloneable {

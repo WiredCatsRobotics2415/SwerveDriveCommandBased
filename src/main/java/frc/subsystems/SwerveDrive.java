@@ -13,6 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.SPI.Port;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -29,6 +30,8 @@ public class SwerveDrive extends SubsystemBase {
 
     //STATES
     private SwerveDriveOdometry odometry;
+    private Field2d field;
+    private boolean isPreparedForZero = false;
 
     public SwerveDrive() {
         modules = new SwerveModule[] {
@@ -51,6 +54,26 @@ public class SwerveDrive extends SubsystemBase {
                 modules[3].getPosition(),
             }
         );
+        field = new Field2d();
+    }
+
+    public void zeroAllModules() {
+        for (SwerveModule m : getModules()) {
+            if (!isPreparedForZero) {
+                m.setModuleOffset(0);
+            } else {
+                double offset = m.getState().angle.getDegrees();
+                RobotPreferences.setOffsetOfModule(m.name, offset);
+                m.setModuleOffset(offset);
+            }
+        }
+        if (!isPreparedForZero) {
+            System.out.println("Zero preparation entered");
+            isPreparedForZero = true;
+        } else {
+            System.out.println("Done zeroing");
+            isPreparedForZero = false;
+        }
     }
 
     /**
@@ -91,7 +114,8 @@ public class SwerveDrive extends SubsystemBase {
             modules[2].getPosition(),
             modules[3].getPosition(),
         });
-
+        field.setRobotPose(odometry.getPoseMeters());
+        SmartDashboard.putData(field);
         for (SwerveModule m : modules) {
             SmartDashboard.putData(m.name.name(), m);
         }
