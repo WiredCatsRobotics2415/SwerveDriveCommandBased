@@ -154,8 +154,8 @@ public class SwerveModule implements Sendable {
         encoderSyncTick = 0;
     }
     // Optimize the reference state to avoid spinning further than 90 degrees
-    SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromDegrees(absoluteEncoder.getRotationDegrees()));
-    //SwerveModuleState state = desiredState;
+    //SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromDegrees(absoluteEncoder.getRotationDegrees()));
+    SwerveModuleState state = desiredState;
     
     azimuthMotor.set(ControlMode.Position, Constants.Swerve.degreesToFalcon(state.angle.getDegrees()));
     driveMotor.set(ControlMode.PercentOutput, state.speedMetersPerSecond / Constants.Swerve.MAX_DRIVE_SPEED);
@@ -175,6 +175,8 @@ public class SwerveModule implements Sendable {
 
   public void setModuleOffset(double offset) {
     this.absoluteEncoder.setOffset(offset);
+    azimuthMotor.setSelectedSensorPosition(Constants.Swerve.degreesToFalcon(this.absoluteEncoder.getRotationDegrees()), 0,
+                Constants.CAN_TIMEOUT_MS);
   }
 
   @Override public void initSendable(SendableBuilder builder) {
@@ -182,9 +184,7 @@ public class SwerveModule implements Sendable {
     builder.addDoubleProperty("setSpeed", () -> this.getLastSetState().speedMetersPerSecond, null);
     builder.addDoubleProperty("setAngle", () -> this.getLastSetState().angle.getDegrees(), null);
     builder.addDoubleProperty("actualSpeed", () -> this.getState().speedMetersPerSecond, null);
-    builder.addDoubleProperty("actualAngle", () -> this.getState().angle.getDegrees(), null);
-    builder.addDoubleProperty("externalAngle", () -> {
-       return Constants.Swerve.falconToDegrees(azimuthMotor.getSelectedSensorPosition()-1)%360;
-    }, null);
+    builder.addDoubleProperty("actualAngle", () ->  Constants.Swerve.falconToDegrees(azimuthMotor.getSelectedSensorPosition()-1)%360, null);
+    builder.addDoubleProperty("externalAngle", () -> this.getState().angle.getDegrees(), null);
   }
 }

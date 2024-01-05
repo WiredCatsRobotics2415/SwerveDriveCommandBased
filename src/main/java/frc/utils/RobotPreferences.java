@@ -103,18 +103,22 @@ public class RobotPreferences {
                 String keyFL = "FL_OFFSET (DO NOT TOUCH)";
                 ensureExistance(keyFL, PrefTypes.DOUBLE, 0.0);
                 Preferences.setDouble(keyFL, offset);
+                break;
             case BACK_LEFT:
                 String keyBL = "BL_OFFSET (DO NOT TOUCH)";
                 ensureExistance(keyBL, PrefTypes.DOUBLE, 0.0);
                 Preferences.setDouble(keyBL, offset);
+                break;
             case BACK_RIGHT:
                 String keyBR = "BR_OFFSET (DO NOT TOUCH)";
                 ensureExistance(keyBR, PrefTypes.DOUBLE, 0.0);
                 Preferences.setDouble(keyBR, offset);
+                break;
             case FRONT_RIGHT:
                 String keyFR = "FR_OFFSET (DO NOT TOUCH)";
                 ensureExistance(keyFR, PrefTypes.DOUBLE, 0.0);
                 Preferences.setDouble(keyFR, offset);
+                break;
             default:
                 break;
         }

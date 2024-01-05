@@ -2,7 +2,7 @@
   {
     "name": "/Preferences/FL_OFFSET (DO NOT TOUCH)",
     "type": "double",
-    "value": 0.0,
+    "value": -0.0,
     "properties": {
       "persistent": true
     }
@@ -10,7 +10,7 @@
   {
     "name": "/Preferences/FR_OFFSET (DO NOT TOUCH)",
     "type": "double",
-    "value": 0.0,
+    "value": -0.0,
     "properties": {
       "persistent": true
     }
@@ -18,7 +18,7 @@
   {
     "name": "/Preferences/BL_OFFSET (DO NOT TOUCH)",
     "type": "double",
-    "value": 0.0,
+    "value": -0.0,
     "properties": {
       "persistent": true
     }
@@ -26,7 +26,7 @@
   {
     "name": "/Preferences/BR_OFFSET (DO NOT TOUCH)",
     "type": "double",
-    "value": 0.0,
+    "value": -0.0,
     "properties": {
       "persistent": true
     }

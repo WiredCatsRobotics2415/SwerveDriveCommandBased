@@ -46,7 +46,7 @@ public class SwerveDrive extends SubsystemBase {
 
         odometry = new SwerveDriveOdometry(
             Constants.Swerve.KINEMATICS,
-            navX.getRotation2d(),
+            Rotation2d.fromDegrees(getYaw()),
             new SwerveModulePosition[] {
                 modules[0].getPosition(),
                 modules[1].getPosition(),
@@ -89,7 +89,7 @@ public class SwerveDrive extends SubsystemBase {
 
         SwerveModuleState[] swerveModuleStates = Constants.Swerve.KINEMATICS.toSwerveModuleStates(
                 this.fieldOrientedEnabled
-                    ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, navX.getRotation2d())
+                    ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, Rotation2d.fromDegrees(getYaw()))
                     : new ChassisSpeeds(xSpeed, ySpeed, rot));
         
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.MAX_DRIVE_SPEED);
@@ -106,9 +106,13 @@ public class SwerveDrive extends SubsystemBase {
         navX.reset();
     }
 
+    public double getYaw() {
+        return navX.getAngle()+RobotPreferences.getNavXOffset();
+    }
+
     @Override
     public void periodic() {
-        odometry.update(Rotation2d.fromDegrees(navX.getAngle()+RobotPreferences.getNavXOffset()), new SwerveModulePosition[] {
+        odometry.update(Rotation2d.fromDegrees(getYaw()), new SwerveModulePosition[] {
             modules[0].getPosition(),
             modules[1].getPosition(),
             modules[2].getPosition(),
