@@ -42,6 +42,7 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/Log Level": "String Chooser",
       "/SmartDashboard/OI": "String Chooser",
       "/SmartDashboard/Zero": "Command"
     }

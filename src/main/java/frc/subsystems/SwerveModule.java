@@ -17,8 +17,10 @@ import frc.robot.Robot;
 import frc.robot.RobotMap;
 import frc.robot.Constants.Swerve.SwerveModuleName;
 import frc.utils.AbsoluteAnalogEncoder;
+import frc.utils.Logger;
 import frc.utils.PIDValue;
 import frc.utils.RobotPreferences;
+import frc.utils.Logger.LogLevel;
 
 public class SwerveModule implements Sendable {
     //HARDWARE
@@ -32,6 +34,7 @@ public class SwerveModule implements Sendable {
 
     //STATES
     private SwerveModuleState lastState = new SwerveModuleState();
+    private double lastAngle;
     private int encoderSyncTick = 0;
 
     public SwerveModule(SwerveModuleName name) {
@@ -180,20 +183,20 @@ public class SwerveModule implements Sendable {
             azimuthMotor.setSelectedSensorPosition(Constants.Swerve.degreesToFalcon(
                 over360RangeSetter(absoluteEncoder.getRotationDegrees(), currentAngle)
             ), 0, Constants.CAN_TIMEOUT_MS);
-            System.out.println("[MODULE " + name.toString() + "] Azimuth synced, diff: " + Math.abs((currentAngle%360)-absoluteEncoder.getRotationDegrees()));
+            Logger.log(LogLevel.DEBUG, "[MODULE " + name.toString() + "] Azimuth synced, diff: " + Math.abs((currentAngle%360)-absoluteEncoder.getRotationDegrees()));
         }
     } else {
         encoderSyncTick = 0;
     }
     // Optimize the reference state to avoid spinning further than 90 degrees
-    //TODO: make sure that the optimize function works with the over360RangeSetter solution
-    //SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromDegrees(absoluteEncoder.getRotationDegrees()));
-    //SwerveModuleState state = desiredState;
     SwerveModuleState state = optimize(desiredState, Rotation2d.fromDegrees(absoluteEncoder.getRotationDegrees()));
-    azimuthMotor.set(ControlMode.Position, Constants.Swerve.degreesToFalcon(
-        over360RangeSetter(state.angle.getDegrees(), Constants.Swerve.falconToDegrees(azimuthMotor.getSelectedSensorPosition()))
-    ));
     driveMotor.set(ControlMode.PercentOutput, state.speedMetersPerSecond / Constants.Swerve.MAX_DRIVE_SPEED);
+    
+    // Module jitter deadband
+    // If the speed is less than 1% than its maximum speed, prevent it from jittering by returning the same angle.
+    double angle = (Math.abs(state.speedMetersPerSecond) <= (Constants.Swerve.MAX_DRIVE_SPEED * 0.01)) ? lastAngle
+        : state.angle.getDegrees();
+    azimuthMotor.set(ControlMode.Position, Constants.Swerve.degreesToFalcon(angle));
     
     //Simulation - fill in all of the simulated values with the ideal 
     if (Robot.isSimulation()) {
@@ -202,6 +205,7 @@ public class SwerveModule implements Sendable {
         driveMotor.getSimCollection().setIntegratedSensorVelocity((int)Constants.Swerve.MPSToFalcon(state.speedMetersPerSecond));
     }
     lastState = state;
+    lastAngle = angle;
   }
 
   public SwerveModuleState getLastSetState() {

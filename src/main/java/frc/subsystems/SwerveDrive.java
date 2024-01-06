@@ -18,7 +18,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Swerve.SwerveModuleName;
+import frc.utils.Logger;
 import frc.utils.RobotPreferences;
+import frc.utils.Logger.LogLevel;
 
 public class SwerveDrive extends SubsystemBase {
     //HARDWARE
@@ -68,10 +70,10 @@ public class SwerveDrive extends SubsystemBase {
             }
         }
         if (!isPreparedForZero) {
-            System.out.println("Zero preparation entered");
+            Logger.log(LogLevel.WARNING, "Zero preparation entered");
             isPreparedForZero = true;
         } else {
-            System.out.println("Done zeroing");
+            Logger.log(LogLevel.WARNING, "Done zeroing");
             isPreparedForZero = false;
         }
     }

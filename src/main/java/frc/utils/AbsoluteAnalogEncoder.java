@@ -31,7 +31,6 @@ public class AbsoluteAnalogEncoder extends AnalogInput {
     }
     
     public double getRotationPercent() {
-        //System.out.println("voltage=" + getVoltage());
         return (getVoltage() / RobotController.getVoltage5V());
     }
 

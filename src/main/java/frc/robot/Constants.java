@@ -20,6 +20,7 @@ public class Constants {
             FRONT_LEFT, FRONT_RIGHT, BACK_LEFT, BACK_RIGHT;
         }
 
+        //Auto azimuth sync settings
         public static final int ENCODER_RESET_TICKS = 30;
         public static final int ENCODER_RESET_DEGREE_THRESHOLD = 1;
         public static double ENCODER_RESET_CPR_THRESHOLD = 0;
@@ -27,6 +28,7 @@ public class Constants {
             ENCODER_RESET_CPR_THRESHOLD = degreesToFalcon(ENCODER_RESET_DEGREE_THRESHOLD)*.1;
         }
 
+        //Physical module and drivebase dimentions
         public static final double AZIMUTH_GEAR_RATIO = (26.0 / 9.0) * (96.0 / 18.0); 
         public static final double DRIVE_GEAR_RATIO = (26.0 / 9.0) * (45 / 15.0); 
         public static final double WHEEL_CIRCUMFERENCE = Math.PI * Units.inchesToMeters(5);
@@ -43,10 +45,11 @@ public class Constants {
             new Translation2d(-FRONTBACK_DISTANCE / 2.0, -LEFTRIGHT_DISTANCE / 2.0)
         );
 
-        //2023
+        //Drive motor control gains (currently not used)
         public static final SimpleMotorFeedforward DRIVE_FF = new SimpleMotorFeedforward(0.271, 0.928, 0.08);
         public static final PIDValue DRIVE_PID = new PIDValue(0.0767,0,0);
 
+        //Current limits
         public static final SupplyCurrentLimitConfiguration DRIVE_CURRENT_LIMIT = new SupplyCurrentLimitConfiguration(false, 30, 60, 0.1);
         public static final SupplyCurrentLimitConfiguration AZIMUTH_CURRENT_LIMIT = new SupplyCurrentLimitConfiguration(true, 25, 40, 0.1);
 
@@ -57,16 +60,15 @@ public class Constants {
             new PIDValue(0.16, 0.0, .012), //Back Right
         };
 
-        // public static final PIDValue[] AZIMUTH_PIDS = {
-        //     new PIDValue(0.72, 0.0, 13.4), //Front Left
-        //     new PIDValue(0.73, 0.0, 15), //Front Right
-        //     new PIDValue(0.72, 0.0, 13.2), //Back Left
-        //     new PIDValue(0.72, 0.0, 13.2), //Back Right
-        // };
-
+        //Maximum swerve speed
         public static final double MAX_ANGULAR_SPEED = 3.0; //m/s
         public static final double MAX_DRIVE_SPEED = 8.0; //m/s
 
+        /**
+         * Converting a degree value to a falcon integrated encoder 2048 tick value. Note that 
+         * this does <b>not</b> compensate for a motor's encoder value reading more than 2048 and 
+         * should be used in conjunction with a function such as over360RangeSetter
+         */
         public static double degreesToFalcon(double degrees) {
             return degrees / (360.0 / (AZIMUTH_GEAR_RATIO * 2048.0));
         }

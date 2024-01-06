@@ -13,7 +13,9 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.subsystems.SwerveDrive;
+import frc.utils.Logger;
 import frc.utils.RobotPreferences;
+import frc.utils.Logger.LogLevel;
 
 public class Robot extends TimedRobot {
   private final SwerveDrive swerveDrive = new SwerveDrive();
@@ -26,7 +28,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     oiChooser = new SendableChooser<Integer>();
     oiChooser.setDefaultOption("Gulikit Controller", 0);
-    for (String k : Preferences.getKeys()) System.out.println(k);
+    for (String k : Preferences.getKeys()) Logger.log(LogLevel.INFO, k);
     SmartDashboard.putData("Zero", new InstantCommand(() -> swerveDrive.zeroAllModules()).ignoringDisable(true));
   }
 
@@ -65,7 +67,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("OI", oiChooser);
     if (RobotController.getUserButton()) {
       if (!isPressingUserButton) {
-        System.out.println("user button");
+        Logger.log(LogLevel.INFO, "user button");
         isPressingUserButton = true;
         CommandScheduler.getInstance().schedule(new InstantCommand(() -> swerveDrive.zeroAllModules()).ignoringDisable(true));
       }

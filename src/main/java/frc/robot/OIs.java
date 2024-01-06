@@ -6,6 +6,8 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.utils.Logger;
+import frc.utils.Logger.LogLevel;
 import frc.utils.RobotPreferences;
 
 public class OIs {
@@ -43,17 +45,16 @@ public class OIs {
                 isCurve = true;
                 curve = RobotPreferences.getCurvePower();
                 if (curve < 1) curve = 1; //Note: must include because fractional/negative powers will yield uncontrolable results
-                System.out.println("OI: Using Curve at " + curve + " power.");
+                Logger.log(LogLevel.INFO, "OI: Using Curve at " + curve + " power.");
             } else {
                 //Slew
                 isCurve = false;
                 slewRate = RobotPreferences.getSlewRateLimit();
-                System.out.println("RP: " + slewRate);
                 if (slewRate < 0) slewRate = 1; //Note: must include because negative rates will yield uncontrolable results
                 xLimiter = new SlewRateLimiter(slewRate);
                 yLimiter = new SlewRateLimiter(slewRate);
                 rLimiter = new SlewRateLimiter(slewRate);
-                System.out.println("OI: Using Slew at " + slewRate + " rate.");
+                Logger.log(LogLevel.INFO, "OI: Using Slew at " + slewRate + " rate.");
             }
         }
 
