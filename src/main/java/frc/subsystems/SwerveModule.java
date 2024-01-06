@@ -133,6 +133,38 @@ public class SwerveModule implements Sendable {
         return desiredSetAngle;
     }
 
+    public SwerveModuleState optimize(SwerveModuleState state, Rotation2d currentAngle) {
+        double speed = state.speedMetersPerSecond; // Get the current speed of the robot in m/s.
+        double targetAngle = state.angle.getDegrees(); // Get current angle.
+        targetAngle = over360RangeSetter(state.angle.getDegrees(), currentAngle.getDegrees());
+        // Set the angle you want the motors to face. Make sure angle is set in the
+        // motor's context.
+        double delta = targetAngle - currentAngle.getDegrees();
+        if (Math.abs(delta) > 90 && Math.abs(delta) < 270) {
+            // If the angle is on the opposite side of the azimuth's circle
+            speed *= -1; // Reverse the wheel's speed.
+            if (delta > 0) {
+                // If the targetAngle is greater than the wheel's current angle, subtract 180
+                // degrees from the target angle.
+                targetAngle -= 180;
+            } else {
+                // If the azimuth's angle is greater than the targetAngle, add 180 degrees from
+                // the target angle.
+                targetAngle += 180;
+            }
+        } else if (Math.abs(delta) >= 270) {
+            // If the difference is greater than 270, rotate outside of [0, 360) degrees
+            // instead of overrotating.
+            if (delta > 0)
+                targetAngle -= 360;
+            // If difference is positive, go down a rotation.
+            else
+                targetAngle += 360;
+            // If difference is negative, go up a rotation.
+        }
+        return new SwerveModuleState(speed, Rotation2d.fromDegrees(targetAngle)); // Pass in speed and new target angle.
+    }
+
     /**
    * Sets the new state for the module.
    *
@@ -154,16 +186,19 @@ public class SwerveModule implements Sendable {
         encoderSyncTick = 0;
     }
     // Optimize the reference state to avoid spinning further than 90 degrees
+    //TODO: make sure that the optimize function works with the over360RangeSetter solution
     //SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromDegrees(absoluteEncoder.getRotationDegrees()));
-    SwerveModuleState state = desiredState;
-    
-    azimuthMotor.set(ControlMode.Position, Constants.Swerve.degreesToFalcon(state.angle.getDegrees()));
+    //SwerveModuleState state = desiredState;
+    SwerveModuleState state = optimize(desiredState, Rotation2d.fromDegrees(absoluteEncoder.getRotationDegrees()));
+    azimuthMotor.set(ControlMode.Position, Constants.Swerve.degreesToFalcon(
+        over360RangeSetter(state.angle.getDegrees(), Constants.Swerve.falconToDegrees(azimuthMotor.getSelectedSensorPosition()))
+    ));
     driveMotor.set(ControlMode.PercentOutput, state.speedMetersPerSecond / Constants.Swerve.MAX_DRIVE_SPEED);
     
     //Simulation - fill in all of the simulated values with the ideal 
     if (Robot.isSimulation()) {
         azimuthMotor.getSimCollection().setIntegratedSensorRawPosition((int)Constants.Swerve.degreesToFalcon(state.angle.getDegrees()));
-        driveMotor.getSimCollection().addIntegratedSensorPosition((int)((state.speedMetersPerSecond/50)*(Constants.Swerve.DRIVE_GEAR_RATIO/Constants.Swerve.WHEEL_CIRCUMFERENCE)*2048));
+        driveMotor.getSimCollection().addIntegratedSensorPosition((int)((state.speedMetersPerSecond*50)*(Constants.Swerve.DRIVE_GEAR_RATIO/Constants.Swerve.WHEEL_CIRCUMFERENCE)*2048));
         driveMotor.getSimCollection().setIntegratedSensorVelocity((int)Constants.Swerve.MPSToFalcon(state.speedMetersPerSecond));
     }
     lastState = state;

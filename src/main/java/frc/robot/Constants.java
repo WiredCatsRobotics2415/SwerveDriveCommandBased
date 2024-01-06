@@ -51,10 +51,10 @@ public class Constants {
         public static final SupplyCurrentLimitConfiguration AZIMUTH_CURRENT_LIMIT = new SupplyCurrentLimitConfiguration(true, 25, 40, 0.1);
 
         public static final PIDValue[] AZIMUTH_PIDS = {
-            new PIDValue(0.40641, 0.0, .012), //Front Left
-            new PIDValue(0.40641, 0.0, .012), //Front Right
-            new PIDValue(0.40474, 0.0, .012), //Back Left
-            new PIDValue(0.40474, 0.0, .012), //Back Right
+            new PIDValue(0.14, 0.0, .012), //Front Left
+            new PIDValue(0.14, 0.0, .012), //Front Right
+            new PIDValue(0.14, 0.0, .012), //Back Left
+            new PIDValue(0.16, 0.0, .012), //Back Right
         };
 
         // public static final PIDValue[] AZIMUTH_PIDS = {
@@ -64,7 +64,7 @@ public class Constants {
         //     new PIDValue(0.72, 0.0, 13.2), //Back Right
         // };
 
-        public static final double MAX_ANGULAR_SPEED = 6.0; //m/s
+        public static final double MAX_ANGULAR_SPEED = 3.0; //m/s
         public static final double MAX_DRIVE_SPEED = 8.0; //m/s
 
         public static double degreesToFalcon(double degrees) {

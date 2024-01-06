@@ -42,11 +42,11 @@ public class SwerveDrive extends SubsystemBase {
         };
 
         navX = new AHRS(Port.kMXP);
-        navX.reset();
+        resetHeading();
 
         odometry = new SwerveDriveOdometry(
             Constants.Swerve.KINEMATICS,
-            Rotation2d.fromDegrees(getYaw()),
+            getYaw(),
             new SwerveModulePosition[] {
                 modules[0].getPosition(),
                 modules[1].getPosition(),
@@ -89,7 +89,7 @@ public class SwerveDrive extends SubsystemBase {
 
         SwerveModuleState[] swerveModuleStates = Constants.Swerve.KINEMATICS.toSwerveModuleStates(
                 this.fieldOrientedEnabled
-                    ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, Rotation2d.fromDegrees(getYaw()))
+                    ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, getYaw())
                     : new ChassisSpeeds(xSpeed, ySpeed, rot));
         
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.MAX_DRIVE_SPEED);
@@ -102,17 +102,30 @@ public class SwerveDrive extends SubsystemBase {
         fieldOrientedEnabled = enabled;
     }
 
-    public void resetHeading() {
-        navX.reset();
+    public Rotation2d getYaw() {
+        double yaw = navX.getYaw();
+        yaw *= -1;
+        // The navX returns an angle between (-180, 180) where 0 is forward, and
+        // positive is counterclockwise.
+        // The WPILib swerve relies on an angle between [0, 360) where 0 is forwards and
+        // positive is counterclockwise.
+        // This function changes the navX return angle to fit the WPILib swerve angle.
+        if (yaw < 0) {
+            yaw = 360 - (yaw * -1);
+        }
+        //always positive yaw
+        yaw = (yaw % 360 + 360) % 360;
+        
+        return Rotation2d.fromDegrees(yaw+90);
     }
 
-    public double getYaw() {
-        return navX.getAngle()+RobotPreferences.getNavXOffset();
+    public void resetHeading() {
+        navX.zeroYaw();
     }
 
     @Override
     public void periodic() {
-        odometry.update(Rotation2d.fromDegrees(getYaw()), new SwerveModulePosition[] {
+        odometry.update(getYaw(), new SwerveModulePosition[] {
             modules[0].getPosition(),
             modules[1].getPosition(),
             modules[2].getPosition(),

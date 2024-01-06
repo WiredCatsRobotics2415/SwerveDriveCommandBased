@@ -101,22 +101,22 @@ public class RobotPreferences {
         switch (name) {
             case FRONT_LEFT:
                 String keyFL = "FL_OFFSET (DO NOT TOUCH)";
-                ensureExistance(keyFL, PrefTypes.DOUBLE, 0.0);
+                ensureExistance(keyFL, PrefTypes.DOUBLE, offset);
                 Preferences.setDouble(keyFL, offset);
                 break;
             case BACK_LEFT:
                 String keyBL = "BL_OFFSET (DO NOT TOUCH)";
-                ensureExistance(keyBL, PrefTypes.DOUBLE, 0.0);
+                ensureExistance(keyBL, PrefTypes.DOUBLE, offset);
                 Preferences.setDouble(keyBL, offset);
                 break;
             case BACK_RIGHT:
                 String keyBR = "BR_OFFSET (DO NOT TOUCH)";
-                ensureExistance(keyBR, PrefTypes.DOUBLE, 0.0);
+                ensureExistance(keyBR, PrefTypes.DOUBLE, offset);
                 Preferences.setDouble(keyBR, offset);
                 break;
             case FRONT_RIGHT:
                 String keyFR = "FR_OFFSET (DO NOT TOUCH)";
-                ensureExistance(keyFR, PrefTypes.DOUBLE, 0.0);
+                ensureExistance(keyFR, PrefTypes.DOUBLE, offset);
                 Preferences.setDouble(keyFR, offset);
                 break;
             default:
@@ -157,9 +157,8 @@ public class RobotPreferences {
     }
 
     /**
-      * What angle should the navX be offset by?
-      * ie. set to 180 if the robot starts backwards
-      * @param offset offset in degrees
+      * Automatically set the internal encoder to the external encoder?
+      * @return status
      */
     public static boolean getAutoAzimuthSync() {
         String key = "Auto azimuth sync";
@@ -168,9 +167,8 @@ public class RobotPreferences {
     }
 
      /**
-      * What angle should the navX be offset by?
-      * ie. set to 180 if the robot starts backwards
-      * @param offset offset in degrees
+      * Automatically set the internal encoder to the external encoder?
+      * @param status
      */
     public static void setAutoAzimuthSync(boolean enable) {
         String key = "Auto azimuth sync";

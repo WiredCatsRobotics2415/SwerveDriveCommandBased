@@ -84,9 +84,9 @@ public class OIs {
 
         public double getRotation() { 
             if (isCurve) {
-                return Math.pow(MathUtil.applyDeadband(controller.getRawAxis(4), DEADBAND), curve);
+                return -Math.pow(MathUtil.applyDeadband(controller.getRawAxis(4), DEADBAND), curve);
             } else {
-                return rLimiter.calculate(MathUtil.applyDeadband(controller.getRawAxis(4), DEADBAND));
+                return -rLimiter.calculate(MathUtil.applyDeadband(controller.getRawAxis(4), DEADBAND));
             }
         }
     }
