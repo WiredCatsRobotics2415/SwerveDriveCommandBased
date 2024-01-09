@@ -43,7 +43,9 @@ public class Logger {
     //A simple method to return the time since startup of the robot, along with the time since the last log, as a log prefix
     private static String getTimeString() {
         double seconds = Timer.getFPGATimestamp();
-        return String.format("[%d:%02d +%.2f] ", (int) seconds / 60, (int) seconds % 60, seconds-lastTime);
+        String timeString = String.format("[%d:%02d +%.2f] ", (int) seconds / 60, (int) seconds % 60, seconds-lastTime);
+        lastTime = seconds;
+        return timeString;
     }
 
     /**

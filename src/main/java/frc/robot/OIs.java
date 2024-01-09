@@ -5,6 +5,7 @@ import java.util.Map;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.utils.Logger;
 import frc.utils.Logger.LogLevel;
@@ -12,6 +13,12 @@ import frc.utils.RobotPreferences;
 
 public class OIs {
     public static abstract class OI {
+        static SendableChooser<Integer> oiChooser;
+        static {
+            oiChooser = new SendableChooser<Integer>();
+            oiChooser.setDefaultOption("Gulikit Controller", 0);
+        }
+
         //PROPERTIES
         public double DEADBAND;
 

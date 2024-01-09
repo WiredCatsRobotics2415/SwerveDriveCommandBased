@@ -104,21 +104,17 @@ public class SwerveDrive extends SubsystemBase {
         fieldOrientedEnabled = enabled;
     }
 
+    /**
+     * Gets the yaw from the navX and converts its default (-180, 180) reading
+     * to (0, 360) for use with fromRelativeSpeeds 
+     * @return yaw in (0, 360)
+     */
     public Rotation2d getYaw() {
-        double yaw = navX.getYaw();
-        yaw *= -1;
-        // The navX returns an angle between (-180, 180) where 0 is forward, and
-        // positive is counterclockwise.
-        // The WPILib swerve relies on an angle between [0, 360) where 0 is forwards and
-        // positive is counterclockwise.
-        // This function changes the navX return angle to fit the WPILib swerve angle.
-        if (yaw < 0) {
-            yaw = 360 - (yaw * -1);
+        double raw = navX.getYaw();
+        if (raw < 0) {
+            return Rotation2d.fromDegrees(360+raw);
         }
-        //always positive yaw
-        yaw = (yaw % 360 + 360) % 360;
-        
-        return Rotation2d.fromDegrees(yaw+90);
+        return Rotation2d.fromDegrees(raw);
     }
 
     public void resetHeading() {

@@ -4,76 +4,42 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Preferences;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import frc.subsystems.SwerveDrive;
-import frc.utils.Logger;
-import frc.utils.RobotPreferences;
-import frc.utils.Logger.LogLevel;
 
 public class Robot extends TimedRobot {
-  private final SwerveDrive swerveDrive = new SwerveDrive();
-
-  private SendableChooser<Integer> oiChooser;
-  private OIs.OI selectedOI;
-  private boolean isPressingUserButton = false;
+  private RobotContainer robot;
+  private EventLoop eventLoop;
+  private Command auto;
 
   @Override
   public void robotInit() {
-    oiChooser = new SendableChooser<Integer>();
-    oiChooser.setDefaultOption("Gulikit Controller", 0);
-    for (String k : Preferences.getKeys()) Logger.log(LogLevel.INFO, k);
-    SmartDashboard.putData("Zero", new InstantCommand(() -> swerveDrive.zeroAllModules()).ignoringDisable(true));
-  }
-
-  private void configButtonBindings() {
-    selectedOI.binds.get("navX Reset").onTrue(new InstantCommand(() -> {
-      swerveDrive.resetHeading();
-    }, swerveDrive));
+    eventLoop = new EventLoop();
+    robot = new RobotContainer(eventLoop);
   }
 
   @Override
   public void teleopInit() {
-    // if (DriverStation.isFMSAttached()) {
-    //  //If in a comp setting, this method runs right after auto is over and teleop is enabled
-    //  //The perfect time to offset the navX so the driver doesn't waste time doing anything
-    //   RobotPreferences.setNavXOffset(180);
-    // }
-    switch (oiChooser.getSelected()) {
-      case 0:
-        selectedOI = new OIs.GulikitController();
-        break;
-      default:
-        selectedOI = new OIs.GulikitController();
-        break;
-    }
-    selectedOI.setInputPrefrences();
-    configButtonBindings();
-    swerveDrive.setFieldOriented(RobotPreferences.getFieldOriented());
-    swerveDrive.setDefaultCommand(new RunCommand(() -> {
-      swerveDrive.drive(selectedOI.getX(), selectedOI.getY(), selectedOI.getRotation());
-    }, swerveDrive));
+    robot.teleopInit();
+  }
+
+  @Override
+  public void autonomousInit() {
+    auto = robot.getAuto();
+    if (auto != null) CommandScheduler.getInstance().schedule(auto);
+  }
+
+  @Override
+  public void autonomousExit() {
+    if (auto != null) auto.cancel();
   }
 
   @Override
   public void robotPeriodic() {
+    eventLoop.poll();
     CommandScheduler.getInstance().run();
-    SmartDashboard.putData("OI", oiChooser);
-    if (RobotController.getUserButton()) {
-      if (!isPressingUserButton) {
-        Logger.log(LogLevel.INFO, "user button");
-        isPressingUserButton = true;
-        CommandScheduler.getInstance().schedule(new InstantCommand(() -> swerveDrive.zeroAllModules()).ignoringDisable(true));
-      }
-    } else {
-      if (isPressingUserButton) isPressingUserButton = false;
-    }
   }
 }
 
